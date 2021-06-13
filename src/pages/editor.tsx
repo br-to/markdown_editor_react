@@ -1,17 +1,25 @@
 import * as React from 'react';
 import styled from 'styled-components';
-import { useStateWithStorage } from '../hooks/usestateWithStorage';
+// import { useStateWithStorage } from '../hooks/usestateWithStorage';
 import * as ReactMarkdown from 'react-markdown';
 import { putMemo } from '../indexeddb/memos';
 import { Button } from '../components/button';
 import { SaveModal } from '../components/saveModal';
+import { Link } from 'react-router-dom';
+import { Header } from '../components/header';
 
 const { useState } = React;
 
-const StorageKey = 'pages/editor:text';
+// const StorageKey = 'pages/editor:text';
+// useStateWithProps を使ってこのページで管理していた状態を、呼び出し元からパラメーターとして渡される処理に変更します。
+type Props = {
+  text: string;
+  setText: (text: string) => void;
+};
 
-export const Editor: React.FC = () => {
-  const [text, setText] = useStateWithStorage('', StorageKey);
+export const Editor: React.FC<Props> = props => {
+  const { text, setText } = props;
+  // const [text, setText] = useStateWithStorage('', StorageKey);
 
   // const saveMemo = (): void => {
   //   putMemo('TITLE', text);
@@ -20,12 +28,12 @@ export const Editor: React.FC = () => {
 
   return (
     <>
-      <Header>
-        Markdown Editor
-        <HeaderControl>
+      <HeaderArea>
+        <Header title="Markdown editor">
           <Button onClick={() => setShowModal(true)}>保存する</Button>
-        </HeaderControl>
-      </Header>
+          <Link to="/history">履歴を見る</Link>
+        </Header>
+      </HeaderArea>
       <Wrapper>
         <TextArea value={text} onChange={e => setText(e.currentTarget.value)} />
         <Preview>
@@ -45,32 +53,19 @@ export const Editor: React.FC = () => {
   );
 };
 
-const Header = styled.header`
-  align-content: center;
-  display: flex;
-  justify-content: space-between;
-  font-size: 1.5rem;
-  height: 2rem;
-  left: 0;
-  line-height: 2rem;
-  padding: 0.5rem 1rem;
-  position: fixed;
-  right: 0;
-  top: 0;
-`;
-
-const HeaderControl = styled.div`
-  height: 2rem;
-  display: flex;
-  align-content: center;
-`;
-
 const Wrapper = styled.div`
   bottom: 0;
   left: 0;
   position: fixed;
   right: 0;
   top: 3rem;
+`;
+
+const HeaderArea = styled.div`
+  position: fixed;
+  right: 0;
+  top: 0;
+  left: 0;
 `;
 
 const TextArea = styled.textarea`
