@@ -2,25 +2,53 @@ import * as React from 'react';
 import styled from 'styled-components';
 import { useStateWithStorage } from '../hooks/usestateWithStorage';
 import * as ReactMarkdown from 'react-markdown';
+import { putMemo } from '../indexeddb/memos';
+import { Button } from '../components/button';
+import { SaveModal } from '../components/saveModal';
+
+const { useState } = React;
 
 const StorageKey = 'pages/editor:text';
 
 export const Editor: React.FC = () => {
   const [text, setText] = useStateWithStorage('', StorageKey);
+
+  // const saveMemo = (): void => {
+  //   putMemo('TITLE', text);
+  // };
+  const [showModal, setShowModal] = useState(false);
+
   return (
     <>
-      <Header>Markdown Editor</Header>
+      <Header>
+        Markdown Editor
+        <HeaderControl>
+          <Button onClick={() => setShowModal(true)}>保存する</Button>
+        </HeaderControl>
+      </Header>
       <Wrapper>
         <TextArea value={text} onChange={e => setText(e.currentTarget.value)} />
         <Preview>
           <ReactMarkdown>{text}</ReactMarkdown>
         </Preview>
       </Wrapper>
+      {showModal && (
+        <SaveModal
+          onSave={(title: string): void => {
+            putMemo(title, text);
+            setShowModal(false);
+          }}
+          onCancel={() => setShowModal(false)}
+        />
+      )}
     </>
   );
 };
 
 const Header = styled.header`
+  align-content: center;
+  display: flex;
+  justify-content: space-between;
   font-size: 1.5rem;
   height: 2rem;
   left: 0;
@@ -29,6 +57,12 @@ const Header = styled.header`
   position: fixed;
   right: 0;
   top: 0;
+`;
+
+const HeaderControl = styled.div`
+  height: 2rem;
+  display: flex;
+  align-content: center;
 `;
 
 const Wrapper = styled.div`
