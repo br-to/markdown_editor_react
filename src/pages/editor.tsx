@@ -1,14 +1,19 @@
 import * as React from 'react';
 import styled from 'styled-components';
 // import { useStateWithStorage } from '../hooks/usestateWithStorage';
-import * as ReactMarkdown from 'react-markdown';
+// import * as ReactMarkdown from 'react-markdown';
 import { putMemo } from '../indexeddb/memos';
 import { Button } from '../components/button';
 import { SaveModal } from '../components/saveModal';
 import { Link } from 'react-router-dom';
 import { Header } from '../components/header';
+// import TestWorker from 'worker-loader!../worker/convertMarkdownWorker';
+import ConvertMarkdownWorker from 'worker-loader!../worker/convertMarkdownWorker';
 
-const { useState } = React;
+// const { useState } = React;
+// const testWorker = new TestWorker();
+const convertMarkdownWorker = new ConvertMarkdownWorker();
+const { useState, useEffect } = React;
 
 // const StorageKey = 'pages/editor:text';
 // useStateWithProps を使ってこのページで管理していた状態を、呼び出し元からパラメーターとして渡される処理に変更します。
@@ -25,6 +30,17 @@ export const Editor: React.FC<Props> = props => {
   //   putMemo('TITLE', text);
   // };
   const [showModal, setShowModal] = useState(false);
+  const [html, setHtml] = useState('');
+
+  useEffect(() => {
+    convertMarkdownWorker.onmessage = event => {
+      setHtml(event.data.html);
+    };
+  }, []);
+
+  useEffect(() => {
+    convertMarkdownWorker.postMessage(text);
+  }, [text]);
 
   return (
     <>
@@ -37,7 +53,7 @@ export const Editor: React.FC<Props> = props => {
       <Wrapper>
         <TextArea value={text} onChange={e => setText(e.currentTarget.value)} />
         <Preview>
-          <ReactMarkdown>{text}</ReactMarkdown>
+          <div dangerouslySetInnerHTML={{ __html: html }} />
         </Preview>
       </Wrapper>
       {showModal && (
